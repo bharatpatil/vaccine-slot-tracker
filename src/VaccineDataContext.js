@@ -1,15 +1,18 @@
 import React, { useEffect } from "react";
 import { useRaf, useSetState, useWindowSize } from "react-use";
 
+export const CHECK_SLOTS_EVERY_SECONDS = 60;
+
 export const VaccineDataContext = React.createContext();
 
 function getData(url) {
   return new Promise((resolve, reject) => {
     fetch(url)
       .then((resp) => resp.json())
-      .then((data) => {
-        resolve(data);
-      });
+      .then(
+        (data) => resolve(data),
+        (error) => reject(error)
+      );
   });
 }
 
@@ -30,7 +33,8 @@ const initialState = {
   slots: [],
   lastChecked: "",
   pincodeToFilter: [],
-  pincodeToTextField: "",
+  pincodeTextField: "",
+  isError: false,
 };
 
 const getInitialData = () => {
@@ -93,11 +97,9 @@ export const VaccineProvider = (props) => {
           return pc;
         }
       })
-      .filter((pc) => pc)
-      .filter((pc) => `${pc}`.length === 6); // filter undefined
-    if (arrPincode?.length > 0) {
-      setState({ pincodeToFilter: arrPincode });
-    }
+      .filter((pc) => pc) // filter undefined
+      .filter((pc) => `${pc}`.length === 6); // pincode length is 6
+    setState({ pincodeToFilter: arrPincode });
   }, [state.pincodeTextField]);
 
   const startCountDown = () => {
@@ -122,7 +124,6 @@ export const VaccineProvider = (props) => {
       }
 
       if (state.countdown === 0) {
-        console.log("starting");
         stopCountDown();
         setState({ isFetching: true });
         const responses = [];
@@ -139,34 +140,52 @@ export const VaccineProvider = (props) => {
           }
         });
 
-        Promise.all(responses).then((cityCalendar) => {
-          setState({
-            slots: cityCalendar
-              .map((slot) => ({
-                sessions: slot.sessions.filter(
-                  (session) =>
-                    session.min_age_limit === 18 &&
-                    session.available_capacity > 0
-                ),
-              }))
-              .map((slot) => ({
-                sessions: slot.sessions.filter((session) => {
-                  if (state.pincodeToFilter.length === 0 || !session.pincode) {
-                    return true;
-                  }
-                  if (state.pincodeToFilter.includes(session.pincode)) {
-                    return true;
-                  }
-                  return false;
-                }),
-              }))
-              .filter((slot) => slot.sessions.length > 0),
-            isFetching: false,
-            countdown: 10,
-            lastChecked: new Date().toLocaleTimeString(),
-          });
-          startCountDown();
-        });
+        Promise.all(responses).then(
+          (cityCalendar) => {
+            setState({
+              slots: cityCalendar
+                .map((slot) => ({
+                  sessions: slot.sessions.filter(
+                    (session) =>
+                      session.min_age_limit === 18 &&
+                      session.available_capacity > 0
+                  ),
+                }))
+                .map((slot) => ({
+                  sessions: slot.sessions.filter((session) => {
+                    if (
+                      state.pincodeToFilter.length === 0 ||
+                      !session.pincode
+                    ) {
+                      return true;
+                    }
+                    if (state.pincodeToFilter.includes(session.pincode)) {
+                      return true;
+                    }
+                    return false;
+                  }),
+                }))
+                .filter((slot) => slot.sessions.length > 0),
+              isFetching: false,
+              countdown:
+                window.CHECK_SLOTS_EVERY_SECONDS || CHECK_SLOTS_EVERY_SECONDS,
+              lastChecked: new Date().toLocaleTimeString(),
+              isError: false,
+            });
+            startCountDown();
+          },
+          () => {
+            setState({
+              slots: [],
+              isFetching: false,
+              countdown:
+                window.CHECK_SLOTS_EVERY_SECONDS || CHECK_SLOTS_EVERY_SECONDS,
+              lastChecked: new Date().toLocaleTimeString(),
+              isError: true,
+            });
+            startCountDown();
+          }
+        );
       }
     } else {
       stopCountDown();

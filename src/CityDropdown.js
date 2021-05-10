@@ -13,9 +13,7 @@ export const CityDropdown = () => {
   const onPincodeChange = (e) => {
     let val = e.target.value.trim();
 
-    if (val.length > 0) {
-      setState({ pincodeTextField: val });
-    }
+    setState({ pincodeTextField: val });
   };
 
   const selectedCities = cities
@@ -38,17 +36,28 @@ export const CityDropdown = () => {
         ))}
       </select>
       <p>
-        Selected {selectedCities.length > 1 ? "Cities" : "City"}:{" "}
+        <span style={{ color: "#ff0080" }}>
+          Selected {selectedCities.length > 1 ? "Cities" : "City"}:{" "}
+        </span>
         {selectedCities.join(" | ")}
       </p>
       <p>
         Specific Pincodes (e.g. 411033,411001):{" "}
         <input
-          style={{width: 400}}
+          style={{ width: 400 }}
           type="text"
           value={state.pincodeTextField}
           onChange={onPincodeChange}
         />
+        <br />
+        <span>
+          Your entered pincodes:{" "}
+          {state.pincodeToFilter.length
+            ? state.pincodeToFilter.join(", ")
+            : "nothing"}
+        </span>
+        <br />
+        <span>(Note: only valid pincodes are considered. If no pincodes are entered then it will show results of all pincodes.)</span>
       </p>
     </div>
   );

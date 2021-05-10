@@ -4,7 +4,14 @@ import { VaccineDataContext } from "./VaccineDataContext";
 export const VaccineSlots = () => {
   const { state, setState } = React.useContext(VaccineDataContext);
 
-  const { slots, startMonitoring, isFetching, countdown, lastChecked } = state;
+  const {
+    slots,
+    startMonitoring,
+    isFetching,
+    countdown,
+    lastChecked,
+    isError,
+  } = state;
 
   const onStartMonitoring = () => {
     setState({ startMonitoring: !startMonitoring });
@@ -31,19 +38,23 @@ export const VaccineSlots = () => {
         <p></p>
       )}
 
-      {slots.length > 0 ? (
+      {!isError && slots.length > 0 ? (
         <ul>
           {slots.map((slot, i) => {
             return slot?.sessions.map((session, i) => {
               return (
                 <li key={i}>
-                  {session.date} {session.name}, {session.block_name},{" "}
-                  {session.district_name}, {session.pincode},{" "}
-                  <span style={{ color: "#00cc00" }}>{session.vaccine}</span> -{" "}
+                  <span style={{ color: "#0000ff" }}>
+                    {session.date} {session.name}, {session.block_name},{" "}
+                    {session.district_name}, {session.pincode},{" "}
+                  </span>
+                  <span>{session.vaccine}</span> -{" "}
                   <span style={{ color: "#ff0080" }}>
                     {session.available_capacity} slots
                   </span>{" "}
-                  <span>(Age limit {session.min_age_limit})</span>
+                  <span style={{ color: "#00cc00" }}>
+                    (Age limit {session.min_age_limit})
+                  </span>
                 </li>
               );
             });
@@ -51,7 +62,11 @@ export const VaccineSlots = () => {
         </ul>
       ) : (
         <p>
-          <b>No open slots are available.</b>
+          {isError ? (
+            <b style={{ color: "#ff0000" }}>Error fetching slots retrying...</b>
+          ) : (
+            <b style={{ color: "#ff0080" }}>No open slots are available.</b>
+          )}
         </p>
       )}
     </div>
