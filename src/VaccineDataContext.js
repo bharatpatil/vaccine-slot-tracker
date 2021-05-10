@@ -16,24 +16,56 @@ function getData(url) {
 export const apiUrlTemplate = (distId, checkDate) =>
   `https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/findByDistrict?district_id=${distId}&date=${checkDate}`;
 
+const initialState = {
+  startDate: new Date()
+    .toLocaleDateString("en-IN")
+    .replace("/", "-")
+    .replace("/", "-"),
+  cities: [],
+  shouldBeep: true,
+  startBipping: false,
+  startMonitoring: false,
+  isFetching: false,
+  countdown: 0,
+  slots: [],
+  lastChecked: "",
+  pincodeToFilter: [],
+  pincodeToTextField: "",
+};
+
+const getInitialData = () => {
+  try {
+    return {
+      ...initialState,
+      ...JSON.parse(window.localStorage.getItem("vti.data")),
+      countdown: 0,
+      startBipping: false,
+    };
+  } catch (exp) {
+    return initialState;
+  }
+};
+
+const setDataToLocalStorage = ({
+  cities,
+  shouldBeep,
+  pincodeToFilter,
+  pincodeTextField,
+}) => {
+  try {
+    window.localStorage.setItem(
+      "vti.data",
+      JSON.stringify({ cities, shouldBeep, pincodeToFilter, pincodeTextField })
+    );
+  } catch (exp) {
+    return initialState;
+  }
+};
+
 export const VaccineProvider = (props) => {
   const countDownTimerRef = React.useRef();
 
-  const [state, setState] = useSetState({
-    startDate: new Date()
-      .toLocaleDateString("en-IN")
-      .replace("/", "-")
-      .replace("/", "-"),
-    cities: [],
-    shouldBeep: true,
-    startBipping: false,
-    startMonitoring: false,
-    isFetching: false,
-    monitorIntervalMilliseconds: 60000,
-    countdown: 0,
-    slots: [],
-    lastChecked: ""
-  });
+  const [state, setState] = useSetState(getInitialData);
 
   React.useEffect(() => {
     return stopCountDown;
@@ -43,10 +75,35 @@ export const VaccineProvider = (props) => {
     startMonitoring();
   }, [state.startMonitoring, state.countdown]);
 
+  React.useEffect(() => {
+    setDataToLocalStorage(state);
+  }, [
+    state.cities,
+    state.shouldBeep,
+    state.pincodeToFilter,
+    state.pincodeTextField,
+  ]);
+
+  React.useEffect(() => {
+    const arrPincode = state.pincodeTextField
+      ?.split(",")
+      .map((pincode) => {
+        const pc = parseInt(pincode.trim());
+        if (!isNaN(pc)) {
+          return pc;
+        }
+      })
+      .filter((pc) => pc)
+      .filter((pc) => `${pc}`.length === 6); // filter undefined
+    if (arrPincode?.length > 0) {
+      setState({ pincodeToFilter: arrPincode });
+    }
+  }, [state.pincodeTextField]);
+
   const startCountDown = () => {
     countDownTimerRef.current = setInterval(() => {
       setState((prevState) => ({
-        countdown: prevState.countdown - 1
+        countdown: prevState.countdown - 1,
       }));
     }, 1000);
   };
@@ -90,12 +147,23 @@ export const VaccineProvider = (props) => {
                   (session) =>
                     session.min_age_limit === 18 &&
                     session.available_capacity > 0
-                )
+                ),
+              }))
+              .map((slot) => ({
+                sessions: slot.sessions.filter((session) => {
+                  if (state.pincodeToFilter.length === 0 || !session.pincode) {
+                    return true;
+                  }
+                  if (state.pincodeToFilter.includes(session.pincode)) {
+                    return true;
+                  }
+                  return false;
+                }),
               }))
               .filter((slot) => slot.sessions.length > 0),
             isFetching: false,
-            countdown: 60,
-            lastChecked: new Date().toLocaleTimeString()
+            countdown: 10,
+            lastChecked: new Date().toLocaleTimeString(),
           });
           startCountDown();
         });

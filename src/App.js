@@ -16,7 +16,7 @@ export default function App() {
             https://pranavmehta.github.io/1844vaccine/
           </a>
           <br />
-          <sub>This is the re-written in reactjs just for fun ♥️</sub>
+          <sub>This is re-written in reactjs just for fun ♥️</sub>
         </p>
         <h1>Cowin open slot alert for 18-44 age group</h1>
         <p style={{ maxWidth: 600 }}>

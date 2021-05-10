@@ -10,6 +10,14 @@ export const CityDropdown = () => {
     setState({ cities: value });
   };
 
+  const onPincodeChange = (e) => {
+    let val = e.target.value.trim();
+
+    if (val.length > 0) {
+      setState({ pincodeTextField: val });
+    }
+  };
+
   const selectedCities = cities
     .filter((cityObj) => state.cities.includes(cityObj.id))
     .map((cityObj) => cityObj.cityName);
@@ -32,6 +40,15 @@ export const CityDropdown = () => {
       <p>
         Selected {selectedCities.length > 1 ? "Cities" : "City"}:{" "}
         {selectedCities.join(" | ")}
+      </p>
+      <p>
+        Specific Pincodes (e.g. 411033,411001):{" "}
+        <input
+          style={{width: 400}}
+          type="text"
+          value={state.pincodeTextField}
+          onChange={onPincodeChange}
+        />
       </p>
     </div>
   );
