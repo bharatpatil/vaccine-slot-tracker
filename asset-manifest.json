@@ -1,20 +1,20 @@
 {
   "files": {
     "main.css": "/vaccine-slot-tracker/static/css/main.f29ae65a.chunk.css",
-    "main.js": "/vaccine-slot-tracker/static/js/main.8060cb9a.chunk.js",
-    "main.js.map": "/vaccine-slot-tracker/static/js/main.8060cb9a.chunk.js.map",
+    "main.js": "/vaccine-slot-tracker/static/js/main.c0a6eb00.chunk.js",
+    "main.js.map": "/vaccine-slot-tracker/static/js/main.c0a6eb00.chunk.js.map",
     "runtime-main.js": "/vaccine-slot-tracker/static/js/runtime-main.4087d39b.js",
     "runtime-main.js.map": "/vaccine-slot-tracker/static/js/runtime-main.4087d39b.js.map",
-    "static/js/2.0f56d947.chunk.js": "/vaccine-slot-tracker/static/js/2.0f56d947.chunk.js",
-    "static/js/2.0f56d947.chunk.js.map": "/vaccine-slot-tracker/static/js/2.0f56d947.chunk.js.map",
+    "static/js/2.86a8cd49.chunk.js": "/vaccine-slot-tracker/static/js/2.86a8cd49.chunk.js",
+    "static/js/2.86a8cd49.chunk.js.map": "/vaccine-slot-tracker/static/js/2.86a8cd49.chunk.js.map",
     "index.html": "/vaccine-slot-tracker/index.html",
     "static/css/main.f29ae65a.chunk.css.map": "/vaccine-slot-tracker/static/css/main.f29ae65a.chunk.css.map",
-    "static/js/2.0f56d947.chunk.js.LICENSE.txt": "/vaccine-slot-tracker/static/js/2.0f56d947.chunk.js.LICENSE.txt"
+    "static/js/2.86a8cd49.chunk.js.LICENSE.txt": "/vaccine-slot-tracker/static/js/2.86a8cd49.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.4087d39b.js",
-    "static/js/2.0f56d947.chunk.js",
+    "static/js/2.86a8cd49.chunk.js",
     "static/css/main.f29ae65a.chunk.css",
-    "static/js/main.8060cb9a.chunk.js"
+    "static/js/main.c0a6eb00.chunk.js"
   ]
 }
