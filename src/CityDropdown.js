@@ -16,6 +16,16 @@ export const CityDropdown = () => {
     setState({ pincodeTextField: val });
   };
 
+  const onInputChange = (event) => {
+    const target = event.target;
+    const value = target.type === "checkbox" ? target.checked : target.value;
+    const name = target.name;
+
+    setState({
+      [name]: value,
+    });
+  };
+
   const selectedCities = cities
     .filter((cityObj) => state.cities.includes(cityObj.id))
     .map((cityObj) => cityObj.cityName);
@@ -44,11 +54,32 @@ export const CityDropdown = () => {
       <p>
         Specific Pincodes (e.g. 411033,411001):{" "}
         <input
-          style={{ width: 400 }}
+          style={{ width: 700 }}
           type="text"
           value={state.pincodeTextField}
           onChange={onPincodeChange}
         />
+        <br />
+        <br />
+        <label>
+          <input
+            name="age18"
+            type="checkbox"
+            checked={state.age18}
+            onChange={onInputChange}
+          />{" "}
+          Age 18
+        </label>
+        <label style={{ marginLeft: 20 }}>
+          <input
+            name="age45"
+            type="checkbox"
+            checked={state.age45}
+            onChange={onInputChange}
+          />
+          Age 45
+        </label>
+        <br />
         <br />
         <span>
           Your entered pincodes:{" "}
@@ -57,7 +88,10 @@ export const CityDropdown = () => {
             : "nothing"}
         </span>
         <br />
-        <span>(Note: only valid pincodes are considered. If no pincodes are entered then it will show results of all pincodes.)</span>
+        <span>
+          (Note: only valid pincodes are considered. If no pincodes are entered
+          then it will show results of all pincodes.)
+        </span>
       </p>
     </div>
   );

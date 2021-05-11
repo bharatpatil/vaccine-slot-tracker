@@ -1,6 +1,32 @@
 import React from "react";
 import { VaccineDataContext } from "./VaccineDataContext";
 
+const SlotsUi = ({ slots }) => {
+  return (
+    <ul>
+      {slots &&
+        slots.map &&
+        slots.map((session, i) => {
+          return (
+            <li key={i}>
+              <span style={{ color: "#0000ff" }}>
+                {session.date} {session.name}, {session.block_name},{" "}
+                {session.district_name}, {session.pincode},{" "}
+              </span>
+              <span>{session.vaccine}</span> -{" "}
+              <span style={{ color: "#ff0080" }}>
+                {session.available_capacity} slots
+              </span>{" "}
+              <span style={{ color: "#00cc00" }}>
+                (Age limit {session.min_age_limit})
+              </span>
+            </li>
+          );
+        })}
+    </ul>
+  );
+};
+
 export const VaccineSlots = () => {
   const { state, setState } = React.useContext(VaccineDataContext);
 
@@ -11,6 +37,7 @@ export const VaccineSlots = () => {
     countdown,
     lastChecked,
     isError,
+    groupedSlots: { others, pincode },
   } = state;
 
   const onStartMonitoring = () => {
@@ -38,28 +65,21 @@ export const VaccineSlots = () => {
         <p></p>
       )}
 
-      {!isError && slots.length > 0 ? (
-        <ul>
-          {slots.map((slot, i) => {
-            return slot?.sessions.map((session, i) => {
-              return (
-                <li key={i}>
-                  <span style={{ color: "#0000ff" }}>
-                    {session.date} {session.name}, {session.block_name},{" "}
-                    {session.district_name}, {session.pincode},{" "}
-                  </span>
-                  <span>{session.vaccine}</span> -{" "}
-                  <span style={{ color: "#ff0080" }}>
-                    {session.available_capacity} slots
-                  </span>{" "}
-                  <span style={{ color: "#00cc00" }}>
-                    (Age limit {session.min_age_limit})
-                  </span>
-                </li>
-              );
-            });
-          })}
-        </ul>
+      {!isError ? (
+        <>
+          {pincode && pincode.length > 0 && (
+            <>
+              <h2>Matching pincodes</h2>
+              <SlotsUi slots={pincode} />
+            </>
+          )}
+          {others && others.length > 0 && (
+            <>
+              <h2>Not matching pincodes</h2>
+              <SlotsUi slots={others} />
+            </>
+          )}
+        </>
       ) : (
         <p>
           {isError ? (

@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { useRaf, useSetState, useWindowSize } from "react-use";
+import groupBy from "lodash/groupBy";
 
 export const CHECK_SLOTS_EVERY_SECONDS = 60;
 
@@ -31,10 +32,13 @@ const initialState = {
   isFetching: false,
   countdown: 0,
   slots: [],
+  groupedSlots: {},
   lastChecked: "",
   pincodeToFilter: [],
   pincodeTextField: "",
   isError: false,
+  age18: true,
+  age45: false,
 };
 
 const getInitialData = () => {
@@ -55,11 +59,20 @@ const setDataToLocalStorage = ({
   shouldBeep,
   pincodeToFilter,
   pincodeTextField,
+  age18,
+  age45,
 }) => {
   try {
     window.localStorage.setItem(
       "vti.data",
-      JSON.stringify({ cities, shouldBeep, pincodeToFilter, pincodeTextField })
+      JSON.stringify({
+        cities,
+        shouldBeep,
+        pincodeToFilter,
+        pincodeTextField,
+        age18,
+        age45,
+      })
     );
   } catch (exp) {
     return initialState;
@@ -86,6 +99,8 @@ export const VaccineProvider = (props) => {
     state.shouldBeep,
     state.pincodeToFilter,
     state.pincodeTextField,
+    state.age18,
+    state.age45,
   ]);
 
   React.useEffect(() => {
@@ -101,6 +116,11 @@ export const VaccineProvider = (props) => {
       .filter((pc) => `${pc}`.length === 6); // pincode length is 6
     setState({ pincodeToFilter: arrPincode });
   }, [state.pincodeTextField]);
+
+  // generate grouped slots
+  React.useEffect(() => {
+    getSlotByPincodeGroup();
+  }, [state.slots, state.pincodeToFilter, state.age18, state.age45]);
 
   const startCountDown = () => {
     countDownTimerRef.current = setInterval(() => {
@@ -142,30 +162,13 @@ export const VaccineProvider = (props) => {
 
         Promise.all(responses).then(
           (cityCalendar) => {
+            const slotsWithoutPinCodeFilter = cityCalendar
+              .map((slot) => slot.sessions)
+              .filter((arr) => arr.length > 0)
+              .reduce((val, acc) => (acc = [...acc, ...val]), []);
+
             setState({
-              slots: cityCalendar
-                .map((slot) => ({
-                  sessions: slot.sessions.filter(
-                    (session) =>
-                      session.min_age_limit === 18 &&
-                      session.available_capacity > 0
-                  ),
-                }))
-                .map((slot) => ({
-                  sessions: slot.sessions.filter((session) => {
-                    if (
-                      state.pincodeToFilter.length === 0 ||
-                      !session.pincode
-                    ) {
-                      return true;
-                    }
-                    if (state.pincodeToFilter.includes(session.pincode)) {
-                      return true;
-                    }
-                    return false;
-                  }),
-                }))
-                .filter((slot) => slot.sessions.length > 0),
+              slots: slotsWithoutPinCodeFilter,
               isFetching: false,
               countdown:
                 window.CHECK_SLOTS_EVERY_SECONDS || CHECK_SLOTS_EVERY_SECONDS,
@@ -191,6 +194,28 @@ export const VaccineProvider = (props) => {
       stopCountDown();
       setState({ countdown: 0 });
     }
+  };
+
+  const getSlotByPincodeGroup = () => {
+    const groupedSlots = groupBy(
+      state.slots.filter(
+        (session) =>
+          ((state.age18 && session.min_age_limit === 18) ||
+            (state.age45 && session.min_age_limit === 45)) &&
+          session.available_capacity > 0
+      ),
+      (session) => {
+        if (state.pincodeToFilter.length === 0 || !session.pincode) {
+          return "others";
+        }
+        if (state.pincodeToFilter.includes(session.pincode)) {
+          return "pincode";
+        }
+        return "others";
+      }
+    );
+
+    setState({ groupedSlots });
   };
 
   const getStartDate = () => {

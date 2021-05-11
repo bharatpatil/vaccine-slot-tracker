@@ -10,13 +10,19 @@ const beepSound = () => {
 
 export const Beep = () => {
   const { state, setState } = React.useContext(VaccineDataContext);
-  const { slots, shouldBeep } = state;
+  const {
+    groupedSlots: { others, pincode },
+    shouldBeep,
+  } = state;
 
   // if slots found then trigger beep sound
   React.useEffect(() => {
     let timer;
     let count = 0;
-    if (shouldBeep && slots.length > 0) {
+    if (
+      shouldBeep &&
+      ((pincode && pincode.length > 0) || (others && others.length > 0))
+    ) {
       timer = setInterval(() => {
         beepSound();
         if (++count === 5) {
@@ -25,7 +31,7 @@ export const Beep = () => {
       }, 1000);
     }
     return () => clearInterval(timer);
-  }, [slots, shouldBeep]);
+  }, [others, pincode, shouldBeep]);
 
   const onChange = (event) => {
     const target = event.target;
